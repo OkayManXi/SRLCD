@@ -1,0 +1,68 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.3"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "SRLCD",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "SRLCD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-SRLCD-Release-17bccd0986978c636c1c.json",
+					"name" : "SRLCD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "SRLCD_total::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-SRLCD_total-Release-6fbd4585fba54b9c5c55.json",
+					"name" : "SRLCD_total",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/npcdna/slam_systems/SRLCD/build",
+		"source" : "/home/npcdna/slam_systems/SRLCD"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}
