@@ -43,6 +43,7 @@ KCC_Database Database;
 int32_t main() {
 	//groundtruth_test();
 	//return -1;
+	//数据集位置
 	std::string dataset ="/home/npcdna/datasets/kitti/dataset_gray/sequences/00/00";
 	//cv::VideoCapture video("../../../Dataset/KITTI/sequence00//KITTI1_grey.avi");
 	int width = 1241;
