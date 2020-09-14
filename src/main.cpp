@@ -58,6 +58,7 @@ int32_t main() {
 	Saliency_Extraction salienceFilter;
 	//salienceFilter.init_param(m, n);
 	Database.init(video_size);
+	//检测结果初始化，videosize长度的数组
 	ArrayXXf loop_result = ArrayXXf::Zero(video_size, 1);
 	//performance_test(video);
 	//t_start为当前时间
@@ -138,11 +139,14 @@ int32_t main() {
 		//if(sr_arr.size()==0)
 		//	std::cout << "no feature in current frame" << std::endl;
 		//图像检测出来框进行相似度计算
+		//对图像中每个框进行循环，直到结束
 		for (int p = 0;p < sr_arr.size();p++) {
+			//图像，框位置，颜色，框宽度；通过rect（xywh）生成矩形对象，xy为左上角坐标
 			cv::rectangle(image, cv::Rect(sr_arr[p].x, sr_arr[p].y, sr_arr[p].w, sr_arr[p].h), cv::Scalar(0), 2);
 			sr_arr[p].set_frame_num(num_count);
+			//loop是检测结果的对象，包括当前帧、回环检测database帧和相似度；后面的函数应该是遍历回环检测的database，计算与每帧之间的相似度
 			std::vector<Loop> loop_candidate = Database.query_database(sr_arr[p]);
-
+			//开始根据检测出来的相似度进行筛选，遍历这个框与所有回环关键帧之间的相似度
 			for (int i = 0; i < loop_candidate.size(); i++)
 			{
 				if (temporal_reidentification(loop_result, num_count)) {

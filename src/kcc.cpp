@@ -22,31 +22,41 @@ void KCC_Database::init(int size) {
 	similarity_matrix = ArrayXXf::Zero(size, size);
 	//loop_result = ArrayXXf::Zero(size, 1);
 }
+//相似度计算函数
 std::vector<Loop> KCC_Database::query_database(SR& sr) {
 	//sample = Eigen::Map<ArrayXXf>(&sample_cv.at<float>(0, 0), width, height);
-	float max_similarity = 0;
+	//初始化这种图像与database之间的最大相似度
+    float max_similarity = 0;
+    //长、宽、像素格式、填充像素
 	cv::Mat cvimage(sr.salient_region.cols(), sr.salient_region.rows(), CV_32FC1, sr.salient_region.data());
+    //转置
 	cv::transpose(cvimage, cvimage);
+    //初始化计算结果
 	std::vector<Loop> result;
+    //遍历所有database
 	for (int i = 0;i < image_database.size();i++) {
 		//if (sr.frame_num - image_database[i].frame_num < frame_space)  //68ms
 		//	break;
+        //检测两者框的位置，如果完全对不上，就下一张
 		if (!check_basic_papram(sr, image_database[i])) {
 			continue;
 		}
+        //将需要检测出来图片的框进行resize
 		cv::resize(cvimage, cvimage, cv::Size(image_database[i].salient_region.cols(), image_database[i].salient_region.rows()));
 		Eigen::Map<Eigen::ArrayXXf> image_eigen(&cvimage.at<float>(0, 0), cvimage.cols, cvimage.rows);;
 		//imresize(sr.salient_region, resized_image, image_database[i].salient_region.rows(), );
 		float similarity = kcc_test(image_database[i].salient_region_fft, fft(image_eigen.transpose()), image_database[i].h_hat_star);
 		similarity_matrix(sr.frame_num, image_database[i].frame_num) = max(similarity_matrix(sr.frame_num, image_database[i].frame_num), similarity);
+        //如果相似度大于阈值且两者之间延迟大于设定的阈值（abs为绝对值）（这里大于号应该写错了），就保存为结果中
 		if (similarity > loop_threshold && abs(sr.frame_num- image_database[i].frame_num)> frame_space) {
 			//std::cout << "loop detecterd" << std::endl;
 			result.push_back(Loop(sr.frame_num, image_database[i].frame_num, similarity));
 		}
+        //更新最大相似度
 		if (max_similarity < similarity)
 			max_similarity = similarity;
 	}
-	
+	//如果找不到相似度就将这种图像放入database中
 	if(max_similarity<0.6)
 		add_to_database(sr);
 	return result;
@@ -54,7 +64,7 @@ std::vector<Loop> KCC_Database::query_database(SR& sr) {
 }
 
 void KCC_Database::add_to_database(SR& sr) {
-	//ע������Ҫresize
+	//ע������Ҫresize
 	Eigen::ArrayXXcf h_hat_star;
 	kcc_train(sr.salient_region_fft, h_hat_star);
 	sr.set_h_star(h_hat_star);
