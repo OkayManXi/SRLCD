@@ -11,6 +11,7 @@
 #include "Util.h"
 class SR {
 public:
+	//重载构造函数
 	SR(Eigen::ArrayXXcf salient_region_fft_in, Eigen::ArrayXXcf h_hat_star_in, float cov_in, float edge_cov_in, int frame_num_in);
 	SR(Eigen::ArrayXXcf salient_region_fft_in, float cov_in, float edge_cov_in, int frame_num_in);
 	//SR(Eigen::ArrayXXcf salient_region_fft_in, float cov_in, float edge_cov_in);
@@ -18,6 +19,7 @@ public:
 	void set_h_star(Eigen::ArrayXXcf h_hat_star_in);
 	void set_frame_num(int frame_num_in);
 	void set_xy(int x_in, int y_in, int w_in, int h_in);
+	//成员
 	Eigen::ArrayXXcf salient_region_fft;
 	Eigen::ArrayXXf salient_region;
 	Eigen::ArrayXXcf h_hat_star;

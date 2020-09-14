@@ -130,13 +130,14 @@ int32_t main() {
 		auto saliency_timer_start = std::chrono::high_resolution_clock::now();
 		//将图像送入显著性map里，进行特征提取
 		salienceFilter.saliency_extraction(image, saliency_map);
-		
+		//SR类的向量，猜测是检测框的（xywh）
 		std::vector<SR> sr_arr;
-		//最后进行滤波，完成对数据集图像的预处理
+		//最后进行滤波，完成对图像的显著性检测，出框
 		salienceFilter.salience_filtering(saliency_map, image,sr_arr);
 		
 		//if(sr_arr.size()==0)
 		//	std::cout << "no feature in current frame" << std::endl;
+		//图像检测出来框进行相似度计算
 		for (int p = 0;p < sr_arr.size();p++) {
 			cv::rectangle(image, cv::Rect(sr_arr[p].x, sr_arr[p].y, sr_arr[p].w, sr_arr[p].h), cv::Scalar(0), 2);
 			sr_arr[p].set_frame_num(num_count);
