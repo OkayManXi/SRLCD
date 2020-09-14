@@ -60,7 +60,7 @@ int32_t main() {
 	Database.init(video_size);
 	ArrayXXf loop_result = ArrayXXf::Zero(video_size, 1);
 	//performance_test(video);
-	//当前时间
+	//t_start为当前时间
 	auto t_start = std::chrono::high_resolution_clock::now();
 	std::vector<cv::Mat> videos;
 	//从第一张图到最后一张，前面补0
@@ -82,8 +82,10 @@ int32_t main() {
 		//读取正在处理的数据集图片
 		cv::Mat image = cv::imread(imagefile);
 		//color conversion
+		//如果不是灰度图，就讲RGB图转成灰度图
 		if(image.channels()!=1)
 			cvtColor(image, image, CV_BGR2GRAY);
+		//videos尾部推入image
 		videos.emplace_back(image);
 		//cv::resize(image, image, cv::Size(4, 3));
 		//image.convertTo(image, CV_32F);
@@ -120,12 +122,17 @@ int32_t main() {
 		std::cout << "saliency time=" << double(std::chrono::duration_cast<std::chrono::milliseconds>(saliency_timer_end - saliency_timer_start).count()) << std::endl;
 		fout << double(std::chrono::duration_cast<std::chrono::milliseconds>(saliency_timer_end - saliency_timer_start).count()) << "\n";
 		*/
+		//图像像素转换成0-1之间
 		image.convertTo(image, CV_32F);
-		cv::Mat saliency_map = cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8U);;
+		//显著性检测map设置成图像像素都为0的矩阵
+		cv::Mat saliency_map = cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8U);
+		//显著性检测的启动时间
 		auto saliency_timer_start = std::chrono::high_resolution_clock::now();
+		//将图像送入显著性map里，进行特征提取
 		salienceFilter.saliency_extraction(image, saliency_map);
 		
 		std::vector<SR> sr_arr;
+		//最后进行滤波，完成对数据集图像的预处理
 		salienceFilter.salience_filtering(saliency_map, image,sr_arr);
 		
 		//if(sr_arr.size()==0)
