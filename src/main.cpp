@@ -40,6 +40,7 @@ bool temporal_reidentification(ArrayXXf loop_result, int num_count);
 bool geometry_reidentification_gt(cv::VideoCapture video, int i, int j);
 bool geometry_reidentification_feature_matching(std::vector<cv::Mat>& video, int i, int j);
 KCC_Database Database;
+//主程序
 int32_t main() {
 	//groundtruth_test();
 	//return -1;
@@ -48,6 +49,7 @@ int32_t main() {
 	//cv::VideoCapture video("../../../Dataset/KITTI/sequence00//KITTI1_grey.avi");
 	int width = 1241;
 	int height = 376;
+	//数据集图片数量
 	int video_size = 4540;
 	//int frame_rate = (int)video.get(cv::CAP_PROP_FPS);
 
@@ -58,10 +60,12 @@ int32_t main() {
 	Database.init(video_size);
 	ArrayXXf loop_result = ArrayXXf::Zero(video_size, 1);
 	//performance_test(video);
-
+	//当前时间
 	auto t_start = std::chrono::high_resolution_clock::now();
 	std::vector<cv::Mat> videos;
+	//从第一张图到最后一张，前面补0
 	for(int num_count =0; num_count< video_size; num_count++){
+		//输出正在处理第几张图
 		std::cout << num_count << std::endl;
 		std::string imagefile;
 		if(num_count>=1000){
@@ -75,7 +79,7 @@ int32_t main() {
 		}
 		else 
 			imagefile = dataset+"000"+std::to_string(num_count)+".png";
-
+		//读取正在处理的数据集图片
 		cv::Mat image = cv::imread(imagefile);
 		//color conversion
 		if(image.channels()!=1)
