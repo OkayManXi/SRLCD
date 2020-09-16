@@ -63,12 +63,14 @@ void Saliency_Extraction::saliency_extraction(const cv::Mat& image, cv::Mat& sal
 	}
 	//中值滤波法是一种非线性平滑技术，它将每一像素点的灰度值设置为该点某邻域窗口内的所有像素点灰度值的中值.
 	medianBlur(saliency_map, saliency_map, median_filter_size);
-
+	//输出saliencymap（像素级）
 }
 
  void Saliency_Extraction::salience_filtering(const cv::Mat& saliency_map, cv::Mat& image_float, std::vector<SR>& result_arr) {
 	int connectivity = 8;
 	cv::Mat labels, stats, centroids;
+	//输入map、输出label map、stats输出（xywhs）N×5矩阵、Nx2 CV_64F matrix of centroids:
+    // [ cx0, cy0; ... ; cx(N-1), cy(N-1
 	int obj_num = cv::connectedComponentsWithStats(saliency_map, labels, stats, centroids, connectivity);
 	//std::cout << labels.type() << std::endl;
 	//display_float_img(labels);
@@ -81,21 +83,26 @@ void Saliency_Extraction::saliency_extraction(const cv::Mat& image, cv::Mat& sal
 		int w = stats.at<int>(i, 2);
 		int h = stats.at<int>(i, 3);
 		//std::cout <<x <<" "<<y<<"   "<< w << " " << h << std::endl;
+		//筛选最小宽高
 		if (w < min_width || h < min_height)
 			continue;
+		//处理越界
 		if (x == 0 || y == 0 || x + w >= image_float.cols - 1 || y + h >= image_float.rows - 1)
 			continue;
 
 		int area = stats.at<int>(i, 4);
+		//小于最小占比或者大于最小占比
 		if (area < w*h*min_fill_percentage || w * h > image_float.cols*image_float.rows*max_area_percentage)
 			continue;
 		
 		cv::Mat object;
+		//讲原图的目标框部分复制给object
 		image_float(cv::Rect(x, y, w, h)).copyTo(object);
 		//cv::rectangle(image_float, cv::Rect(x, y, w, h), cv::Scalar(255), 1);
-		
+		//计算目标框均值
 		float mean = cv::sum(object).val[0] / (w*h);
 		//std::cout << object.type() << std::endl;
+		//计算协方差
 		float cov = 0.0;
 		for (int p = 0;p < h;p++) {
 			for (int q = 0;q < w;q++) {
@@ -106,9 +113,11 @@ void Saliency_Extraction::saliency_extraction(const cv::Mat& image, cv::Mat& sal
 		}
 		cov = cov / (w*h);
 		//std::cout << cov << std::endl;
+		//筛选框的协方差
 		if (cov < min_cov)
 			continue;
 		cv::Mat edge;
+		//拉普拉斯算法。输出edge
 		cv::Laplacian(object, edge, CV_32F, 3);
 		float edge_cov = 0;
 		for (int p = 0;p < h;p++) {
