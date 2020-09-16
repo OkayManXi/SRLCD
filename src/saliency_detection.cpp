@@ -8,45 +8,60 @@ void Saliency_Extraction::init_param(int image_width, int image_height) {
 void Saliency_Extraction::saliency_extraction(const cv::Mat& image, cv::Mat& saliency_map) {
 	//log spectral
 	//cv::Mat result = image.clone();
+	//创建Mat数组planes，两个元素，一个是扩展后并转为float型的图像，另一个是同样大小，赋值为0的图像。
 	cv::Mat planes[] = { cv::Mat_<float>(image.clone()), cv::Mat::zeros(image.size(), CV_32F) };
+	//复数图像
 	cv::Mat complexImg;
+	//通道合并,双通道
 	cv::merge(planes, 2, complexImg);
+	//离散傅里叶变换	
 	cv::dft(complexImg, complexImg);
+	//复数图像中实部虚部分开，分离complexI的两个通道到数组 planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
 	cv::split(complexImg, planes);
 	cv::Mat mag, logmag, smooth, spectralResidual;
+	//计算幅值，mag为输出赋值
 	cv::magnitude(planes[0], planes[1], mag);
 	// compute the magnitude and switch to logarithmic scale
 	// => log(sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
+	//对数
 	cv::log(mag, logmag);
+	//线性滤波，logmag输入、smooth输出、-1为原深度、滤波核size=7
 	cv::boxFilter(logmag, smooth, -1, cv::Size(average_filter_size, average_filter_size));
+	//图像像素值相减，spectral为输出
 	cv::subtract(logmag, smooth, spectralResidual);
+	//还原到对数计算前
 	cv::exp(spectralResidual, spectralResidual);
 
 	// real part 
 	planes[0] = planes[0].mul(spectralResidual) / mag;
 	// imaginary part 
 	planes[1] = planes[1].mul(spectralResidual) / mag;
-
+	//再次合并成两通道的复数图像
 	cv::merge(planes, 2, complexImg);
 	cv::dft(complexImg, complexImg, cv::DFT_INVERSE | cv::DFT_SCALE);
 	cv::split(complexImg, planes);
 	// get magnitude
 	cv::magnitude(planes[0], planes[1], mag);
 	// get square of magnitude
+	//平方
 	cv::multiply(mag, mag, mag);
 	// Gaussian kernel size. ksize.width and ksize.height can differ but they both must be positive and odd
 	//cv::GaussianBlur(mag, mag, cv::Size(5, 5), 8, 8);
+	//阈值为1.3×mag第一个通道均值（实域）
 	float threshhold = extraction_treshold * cv::mean(mag).val[0];
 	//std::cout << mag.at<float>(383, 1249) << std::endl;
 	//std::cout << mag.type() << std::endl;
 	for (int i = 0;i < image.rows;i++) {
 		for (int j = 0;j < image.cols;j++) {
 			if (mag.at<float>(i, j) < threshhold)
+				//小于阈值是黑色
 				saliency_map.at<unsigned char>(i, j) = 0;
 			else
+				//大于为白色
 				saliency_map.at<unsigned char>(i, j) = 255;
 		}
 	}
+	//中值滤波法是一种非线性平滑技术，它将每一像素点的灰度值设置为该点某邻域窗口内的所有像素点灰度值的中值.
 	medianBlur(saliency_map, saliency_map, median_filter_size);
 
 }
